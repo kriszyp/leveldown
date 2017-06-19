@@ -190,7 +190,7 @@ NAN_METHOD(Database::OpenSync) {
   leveldown::Database* database = Nan::ObjectWrap::Unwrap<leveldown::Database>(info.This());
   v8::Local<v8::Object> optionsObj;
   if (info[0]->IsObject()) {
-    optionsObj = info[0].As<v8::Object>()
+    optionsObj = info[0].As<v8::Object>();
   }
   bool createIfMissing = BooleanOptionValue(optionsObj, "createIfMissing", true);
   bool errorIfExists = BooleanOptionValue(optionsObj, "errorIfExists");
@@ -212,8 +212,6 @@ NAN_METHOD(Database::OpenSync) {
   uint32_t maxFileSize = UInt32OptionValue(optionsObj, "maxFileSize", 2 << 20);
   
   leveldb::Options options = leveldb::Options();
-  options.block_cache            = blockCache;
-  options.filter_policy          = filterPolicy;
   options.create_if_missing      = createIfMissing;
   options.error_if_exists        = errorIfExists;
   options.compression            = compression
@@ -549,7 +547,7 @@ NAN_METHOD(Database::BatchSync) {
   // don't allow an empty batch through
   if (hasData) {
     leveldb::WriteOptions options = leveldb::WriteOptions();
-    options.sync = sync
+    options.sync = sync;
     leveldb::Status status = database->WriteBatchToDatabase(&options, batch);
     delete batch;
    
