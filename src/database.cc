@@ -188,7 +188,11 @@ v8::Local<v8::Value> Database::NewInstance (v8::Local<v8::String> &location) {
 //openSync(options)
 NAN_METHOD(Database::OpenSync) {
   leveldown::Database* database = Nan::ObjectWrap::Unwrap<leveldown::Database>(info.This());
-  /*bool createIfMissing = BooleanOptionValue(optionsObj, "createIfMissing", true);
+  v8::Local<v8::Object> optionsObj;
+  if (info[0]->IsObject()) {
+    optionsObj = info[0].As<v8::Object>()
+  }
+  bool createIfMissing = BooleanOptionValue(optionsObj, "createIfMissing", true);
   bool errorIfExists = BooleanOptionValue(optionsObj, "errorIfExists");
   bool compression = BooleanOptionValue(optionsObj, "compression", true);
 
@@ -206,9 +210,9 @@ NAN_METHOD(Database::OpenSync) {
     , 16
   );
   uint32_t maxFileSize = UInt32OptionValue(optionsObj, "maxFileSize", 2 << 20);
-  */
+  
   leveldb::Options options = leveldb::Options();
-  /*options->block_cache            = blockCache;
+  options->block_cache            = blockCache;
   options->filter_policy          = filterPolicy;
   options->create_if_missing      = createIfMissing;
   options->error_if_exists        = errorIfExists;
@@ -219,7 +223,7 @@ NAN_METHOD(Database::OpenSync) {
   options->block_size             = blockSize;
   options->max_open_files         = maxOpenFiles;
   options->block_restart_interval = blockRestartInterval;
-  options->max_file_size          = maxFileSize;*/
+  options->max_file_size          = maxFileSize;
 
   leveldb::Status status = database->OpenDatabase(&options);
  
@@ -346,13 +350,18 @@ NAN_METHOD(Database::PutSync) {
     Nan::ThrowError("PutSync requires the key argument.");
     info.GetReturnValue().SetUndefined();
   }
-  
+  v8::Local<v8::Object> optionsObj;
+  if (info[2]->IsObject()) {
+    optionsObj = info[2].As<v8::Object>()
+  }
+
   v8::Local<v8::Object> keyHandle = info[0].As<v8::Object>();
   LD_STRING_OR_BUFFER_TO_SLICE(key, keyHandle, key);
   v8::Local<v8::Object> valueHandle = info[1].As<v8::Object>();
   LD_STRING_OR_BUFFER_TO_SLICE(value, valueHandle, value);
 
   leveldb::WriteOptions options = leveldb::WriteOptions();
+  options.sync = sync
   leveldb::Status status = database->PutToDatabase(&options, key, value);
   DisposeStringOrBufferFromSlice(keyHandle, key);
   DisposeStringOrBufferFromSlice(valueHandle, value);
@@ -452,10 +461,14 @@ NAN_METHOD(Database::DeleteSync) {
 
   v8::Local<v8::Object> keyHandle = info[0].As<v8::Object>();
   LD_STRING_OR_BUFFER_TO_SLICE(key, keyHandle, key);
-//    bool sync = BooleanOptionValue(optionsObj, "sync");
-
+  v8::Local<v8::Object> optionsObj;
+  if (info[1]->IsObject()) {
+    optionsObj = info[1].As<v8::Object>()
+  }
+  bool sync = BooleanOptionValue(optionsObj, "sync");
 
   leveldb::WriteOptions options = leveldb::WriteOptions();
+  options.sync = sync
   leveldb::Status status = database->DeleteFromDatabase(&options, key);
   DisposeStringOrBufferFromSlice(keyHandle, key);
  
@@ -490,8 +503,12 @@ NAN_METHOD(Database::Delete) {
 
 NAN_METHOD(Database::BatchSync) {
   leveldown::Database* database = Nan::ObjectWrap::Unwrap<leveldown::Database>(info.This());
+  v8::Local<v8::Object> optionsObj;
+  if (info[1]->IsObject()) {
+    optionsObj = info[1].As<v8::Object>()
+  }
 
-//  bool sync = BooleanOptionValue(optionsObj, "sync");
+  bool sync = BooleanOptionValue(optionsObj, "sync");
 
   v8::Local<v8::Array> array = v8::Local<v8::Array>::Cast(info[0]);
 
@@ -531,7 +548,7 @@ NAN_METHOD(Database::BatchSync) {
   // don't allow an empty batch through
   if (hasData) {
     leveldb::WriteOptions options = leveldb::WriteOptions();
-  //  options.sync = sync
+    options.sync = sync
     leveldb::Status status = database->WriteBatchToDatabase(&options, batch);
     delete batch;
    
