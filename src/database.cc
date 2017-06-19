@@ -207,7 +207,7 @@ NAN_METHOD(Database::OpenSync) {
   );
   uint32_t maxFileSize = UInt32OptionValue(optionsObj, "maxFileSize", 2 << 20);
   */
-  leveldb::Options options = new leveldb::Options();
+  leveldb::Options options = leveldb::Options();
   /*options->block_cache            = blockCache;
   options->filter_policy          = filterPolicy;
   options->create_if_missing      = createIfMissing;
