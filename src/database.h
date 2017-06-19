@@ -94,13 +94,17 @@ private:
 
   static NAN_METHOD(New);
   static NAN_METHOD(Open);
+  static NAN_METHOD(OpenSync);
   static NAN_METHOD(Close);
+  static NAN_METHOD(CloseSync);
   static NAN_METHOD(Put);
   static NAN_METHOD(PutSync);
   static NAN_METHOD(Delete);
+  static NAN_METHOD(DeleteSync);
   static NAN_METHOD(Get);
   static NAN_METHOD(GetSync);
   static NAN_METHOD(Batch);
+  static NAN_METHOD(BatchSync);
   static NAN_METHOD(Write);
   static NAN_METHOD(Iterator);
   static NAN_METHOD(ApproximateSize);

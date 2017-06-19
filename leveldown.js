@@ -21,15 +21,24 @@ util.inherits(LevelDOWN, AbstractLevelDOWN)
 LevelDOWN.prototype._open = function (options, callback) {
   this.binding.open(options, callback)
 }
+LevelDOWN.prototype.openSync = function (options) {
+  return this.binding.openSync(options)
+}
 
 
 LevelDOWN.prototype._close = function (callback) {
   this.binding.close(callback)
 }
+LevelDOWN.prototype.closeSync = function () {
+  return this.binding.closeSync()
+}
 
 
 LevelDOWN.prototype._put = function (key, value, options, callback) {
   this.binding.put(key, value, options, callback)
+}
+LevelDOWN.prototype.putSync = function (key, value, options) {
+    return this.binding.putSync(key, value, options)
 }
 
 
@@ -41,12 +50,12 @@ LevelDOWN.prototype.getSync = function (key, options) {
   return this.binding.getSync(key, options)
 }
 
-LevelDOWN.prototype.putSync = function (key, options) {
-    return this.binding.putSync(key, options)
-}
 
 LevelDOWN.prototype._del = function (key, options, callback) {
   this.binding.del(key, options, callback)
+}
+LevelDOWN.prototype.delSync = function (key, options) {
+  return this.binding.delSync(key, options)
 }
 
 
@@ -57,6 +66,9 @@ LevelDOWN.prototype._chainedBatch = function () {
 
 LevelDOWN.prototype._batch = function (operations, options, callback) {
   return this.binding.batch(operations, options, callback)
+}
+LevelDOWN.prototype.batchSync = function (operations, options) {
+  return this.binding.batchSync(operations, options)
 }
 
 
