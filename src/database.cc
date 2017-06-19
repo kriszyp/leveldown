@@ -185,10 +185,10 @@ v8::Local<v8::Value> Database::NewInstance (v8::Local<v8::String> &location) {
   return scope.Escape(instance);
 }
 
-openSync(options)
+//openSync(options)
 NAN_METHOD(Database::OpenSync) {
   leveldown::Database* database = Nan::ObjectWrap::Unwrap<leveldown::Database>(info.This());
-  bool createIfMissing = BooleanOptionValue(optionsObj, "createIfMissing", true);
+  /*bool createIfMissing = BooleanOptionValue(optionsObj, "createIfMissing", true);
   bool errorIfExists = BooleanOptionValue(optionsObj, "errorIfExists");
   bool compression = BooleanOptionValue(optionsObj, "compression", true);
 
@@ -206,9 +206,9 @@ NAN_METHOD(Database::OpenSync) {
     , 16
   );
   uint32_t maxFileSize = UInt32OptionValue(optionsObj, "maxFileSize", 2 << 20);
-  
+  */
   leveldb::Options options = new leveldb::Options();
-  options->block_cache            = blockCache;
+  /*options->block_cache            = blockCache;
   options->filter_policy          = filterPolicy;
   options->create_if_missing      = createIfMissing;
   options->error_if_exists        = errorIfExists;
@@ -219,7 +219,7 @@ NAN_METHOD(Database::OpenSync) {
   options->block_size             = blockSize;
   options->max_open_files         = maxOpenFiles;
   options->block_restart_interval = blockRestartInterval;
-  options->max_file_size          = maxFileSize;
+  options->max_file_size          = maxFileSize;*/
 
   leveldb::Status status = database->OpenDatabase(&options);
  
@@ -283,14 +283,8 @@ NAN_METHOD(EmptyMethod) {
 NAN_METHOD(Database::CloseSync) {
   leveldown::Database* database = Nan::ObjectWrap::Unwrap<leveldown::Database>(info.This());
 
-  leveldb::Status status = database->CloseDatabase();
- 
-  if (!status.ok()) {
-    Nan::ThrowError(status.ToString().c_str());
-    info.GetReturnValue().SetUndefined();
-  }
-
-  info.GetReturnValue().Set(Nan::New(true));
+  database->CloseDatabase();
+  info.GetReturnValue().SetUndefined();
 }
 
 NAN_METHOD(Database::Close) {
