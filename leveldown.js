@@ -37,6 +37,13 @@ LevelDOWN.prototype._get = function (key, options, callback) {
   this.binding.get(key, options, callback)
 }
 
+LevelDOWN.prototype.getSync = function (key, options) {
+  return this.binding.getSync(key, options)
+}
+
+LevelDOWN.prototype.putSync = function (key, options) {
+    return this.binding.putSync(key, options)
+}
 
 LevelDOWN.prototype._del = function (key, options, callback) {
   this.binding.del(key, options, callback)

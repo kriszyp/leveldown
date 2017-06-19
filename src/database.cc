@@ -144,7 +144,9 @@ void Database::Init () {
   Nan::SetPrototypeMethod(tpl, "open", Database::Open);
   Nan::SetPrototypeMethod(tpl, "close", Database::Close);
   Nan::SetPrototypeMethod(tpl, "put", Database::Put);
+  Nan::SetPrototypeMethod(tpl, "putSync", Database::PutSync);
   Nan::SetPrototypeMethod(tpl, "get", Database::Get);
+  Nan::SetPrototypeMethod(tpl, "getSync", Database::GetSync);
   Nan::SetPrototypeMethod(tpl, "del", Database::Delete);
   Nan::SetPrototypeMethod(tpl, "batch", Database::Batch);
   Nan::SetPrototypeMethod(tpl, "approximateSize", Database::ApproximateSize);
@@ -278,6 +280,35 @@ NAN_METHOD(Database::Close) {
     Nan::AsyncQueueWorker(worker);
   }
 }
+    
+    
+    //putSync(aKey, aValue)
+    NAN_METHOD(Database::PutSync) {
+        
+        leveldown::Database* database = Nan::ObjectWrap::Unwrap<leveldown::Database>(info.This());
+        if (info.Length() == 0) {
+            Nan::ThrowError("PutSync requires the key argument.");
+            info.GetReturnValue().SetUndefined();
+        }
+        
+        v8::Local<v8::Object> keyHandle = info[0].As<v8::Object>();
+        LD_STRING_OR_BUFFER_TO_SLICE(key, keyHandle, key);
+        v8::Local<v8::Object> valueHandle = info[1].As<v8::Object>();
+        LD_STRING_OR_BUFFER_TO_SLICE(value, valueHandle, value);
+
+        leveldb::WriteOptions options = leveldb::WriteOptions();
+        leveldb::Status status = database->PutToDatabase(&options, key, value);
+        DisposeStringOrBufferFromSlice(keyHandle, key);
+        DisposeStringOrBufferFromSlice(valueHandle, value);
+       
+        if (!status.ok()) {
+            leveldb::Status* st = reinterpret_cast<leveldb::Status*>(&status);
+            Nan::ThrowError(status.ToString().c_str());
+            info.GetReturnValue().SetUndefined();
+        }
+
+        info.GetReturnValue().Set(Nan::New(true));
+    }
 
 NAN_METHOD(Database::Put) {
   LD_METHOD_SETUP_COMMON(put, 2, 3)
@@ -305,6 +336,38 @@ NAN_METHOD(Database::Put) {
   Nan::AsyncQueueWorker(worker);
 }
 
+
+    //getSync(aKey, fillCache=true)
+    NAN_METHOD(Database::GetSync) {
+        
+        leveldown::Database* database = Nan::ObjectWrap::Unwrap<leveldown::Database>(info.This());
+        if (info.Length() == 0) {
+            Nan::ThrowError("GetSync requires the key argument.");
+            info.GetReturnValue().SetUndefined();
+        }
+        
+        v8::Local<v8::Object> keyHandle = info[0].As<v8::Object>();
+        LD_STRING_OR_BUFFER_TO_SLICE(key, keyHandle, key);
+        std::string value;
+        bool fillCache = true;
+        if (info.Length() > 1 && info[1]->IsBoolean()) fillCache = info[1]->BooleanValue();
+        
+        leveldb::ReadOptions options = leveldb::ReadOptions();
+        options.fill_cache = fillCache;
+        leveldb::Status status = database->GetFromDatabase(&options, key, value);
+        DisposeStringOrBufferFromSlice(keyHandle, key);
+        
+        if (!status.ok()) {
+            leveldb::Status* st = reinterpret_cast<leveldb::Status*>(&status);
+            Nan::ThrowError(status.ToString().c_str());
+            info.GetReturnValue().SetUndefined();
+        }
+        
+        v8::Local<v8::Value> returnValue = Nan::New<v8::String>((char*)value.data(), value.size()).ToLocalChecked();
+        //printf("\ndb.get(%s)=%s\n", *key, *NanUtf8String(returnValue));
+        info.GetReturnValue().Set(returnValue);
+    }
+    
 NAN_METHOD(Database::Get) {
   LD_METHOD_SETUP_COMMON(get, 1, 2)
 
