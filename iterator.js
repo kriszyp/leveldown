@@ -59,11 +59,16 @@ Iterator.prototype._next = function (callback) {
 
   return this
 }
-
+Iterator.prototype.nextSync = function () {
+  return this.binding.nextSync()
+}
 
 Iterator.prototype._end = function (callback) {
   delete this.cache
   this.binding.end(callback)
+}
+Iterator.prototype.endSync = function () {
+  return this.binding.endSync()
 }
 
 

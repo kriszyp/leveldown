@@ -320,6 +320,53 @@ NAN_METHOD(Iterator::Seek) {
   info.GetReturnValue().Set(info.Holder());
 }
 
+NAN_METHOD(Iterator::NextSync) {
+  Iterator* iterator = Nan::ObjectWrap::Unwrap<Iterator>(info.This());
+
+  if (iterator->ended) {
+    return Nan::ThrowError("iterator has ended");
+  }
+
+  //leveldb::Iterator* dbIterator = iterator->dbIterator;
+
+  std::vector<std::pair<std::string, std::string> >& result;
+
+  bool ok = iterator->IteratorNext(result);
+
+  size_t idx = 0;
+
+  size_t arraySize = result.size() * 2;
+  v8::Local<v8::Array> returnArray = Nan::New<v8::Array>(arraySize);
+
+  for(idx = 0; idx < result.size(); ++idx) {
+    std::pair<std::string, std::string> row = result[idx];
+    std::string key = row.first;
+    std::string value = row.second;
+
+    v8::Local<v8::Value> returnKey;
+    if (iterator->keyAsBuffer) {
+      //TODO: use NewBuffer, see database_async.cc
+      returnKey = Nan::CopyBuffer((char*)key.data(), key.size()).ToLocalChecked();
+    } else {
+      returnKey = Nan::New<v8::String>((char*)key.data(), key.size()).ToLocalChecked();
+    }
+
+    v8::Local<v8::Value> returnValue;
+    if (iterator->valueAsBuffer) {
+      //TODO: use NewBuffer, see database_async.cc
+      returnValue = Nan::CopyBuffer((char*)value.data(), value.size()).ToLocalChecked();
+    } else {
+      returnValue = Nan::New<v8::String>((char*)value.data(), value.size()).ToLocalChecked();
+    }
+
+    // put the key & value in a descending order, so that they can be .pop:ed in javascript-land
+    returnArray->Set(Nan::New<v8::Integer>(static_cast<int>(arraySize - idx * 2 - 1)), returnKey);
+    returnArray->Set(Nan::New<v8::Integer>(static_cast<int>(arraySize - idx * 2 - 2)), returnValue);
+  }
+
+  info.GetReturnValue().Set(returnArray);
+}
+
 NAN_METHOD(Iterator::Next) {
   Iterator* iterator = Nan::ObjectWrap::Unwrap<Iterator>(info.This());
 
@@ -345,6 +392,13 @@ NAN_METHOD(Iterator::Next) {
   Nan::AsyncQueueWorker(worker);
 
   info.GetReturnValue().Set(info.Holder());
+}
+
+NAN_METHOD(Iterator::EndSync) {
+  Iterator* iterator = Nan::ObjectWrap::Unwrap<Iterator>(info.This());
+  //leveldb::Iterator* dbIterator = iterator->dbIterator;
+  iterator->IteratorEnd();
+  iterator->Release()
 }
 
 NAN_METHOD(Iterator::End) {
@@ -385,7 +439,9 @@ void Iterator::Init () {
   tpl->InstanceTemplate()->SetInternalFieldCount(1);
   Nan::SetPrototypeMethod(tpl, "seek", Iterator::Seek);
   Nan::SetPrototypeMethod(tpl, "next", Iterator::Next);
+  Nan::SetPrototypeMethod(tpl, "nextSync", Iterator::NextSync);
   Nan::SetPrototypeMethod(tpl, "end", Iterator::End);
+  Nan::SetPrototypeMethod(tpl, "endSync", Iterator::EndSync);
 }
 
 v8::Local<v8::Object> Iterator::NewInstance (
