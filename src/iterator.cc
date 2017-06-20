@@ -410,14 +410,14 @@ NAN_METHOD(Iterator::EndSync) {
   Iterator* iterator = Nan::ObjectWrap::Unwrap<Iterator>(info.This());
   if (iterator->nexting) {
     info.GetReturnValue().Set(Nan::New(false));
-  }
-  if (!iterator->ended) {
+  } else if (!iterator->ended) {
     iterator->ended = true;
     iterator->IteratorEnd();
     iterator->Release();
-    info.GetReturnValue().Set(Nan::New(false));
+    info.GetReturnValue().Set(Nan::New(true));
+  } else {
+    info.GetReturnValue().SetUndefined();
   }
-  info.GetReturnValue().SetUndefined();
 }
 
 NAN_METHOD(Iterator::End) {
