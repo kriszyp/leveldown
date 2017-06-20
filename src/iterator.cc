@@ -335,9 +335,8 @@ NAN_METHOD(Iterator::NextSync) {
   if (!ok) {
     leveldb::Status s = iterator->IteratorStatus();
     if (!s.ok()) {
-      Status* st = reinterpret_cast<Status*>(&s);
-      NanThrowError(s.ToString().c_str(), st->code());
-      NanReturnUndefined();
+      Nan::ThrowError(s.ToString().c_str());
+      info.GetReturnValue().SetUndefined();
     }
   }
   size_t idx = 0;
