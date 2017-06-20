@@ -414,7 +414,7 @@ NAN_METHOD(Iterator::EndSync) {
   if (!iterator->ended) {
     iterator->ended = true;
     iterator->IteratorEnd();
-    //iterator->Release();
+    iterator->Release();
     info.GetReturnValue().Set(Nan::New(false));
   }
   info.GetReturnValue().SetUndefined();
