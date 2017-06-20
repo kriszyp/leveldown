@@ -326,13 +326,20 @@ NAN_METHOD(Iterator::NextSync) {
   if (iterator->ended) {
     return Nan::ThrowError("iterator has ended");
   }
+  iterator->nexting = true;
 
-  //leveldb::Iterator* dbIterator = iterator->dbIterator;
-
-  std::vector<std::pair<std::string, std::string> >& result;
+  std::vector<std::pair<std::string, std::string> > result;
 
   bool ok = iterator->IteratorNext(result);
-
+  checkEndCallback(iterator);
+  if (!ok) {
+    leveldb::Status s = iterator->IteratorStatus();
+    if (!s.ok()) {
+      Status* st = reinterpret_cast<Status*>(&s);
+      NanThrowError(s.ToString().c_str(), st->code());
+      NanReturnUndefined();
+    }
+  }
   size_t idx = 0;
 
   size_t arraySize = result.size() * 2;
@@ -363,6 +370,12 @@ NAN_METHOD(Iterator::NextSync) {
     returnArray->Set(Nan::New<v8::Integer>(static_cast<int>(arraySize - idx * 2 - 1)), returnKey);
     returnArray->Set(Nan::New<v8::Integer>(static_cast<int>(arraySize - idx * 2 - 2)), returnValue);
   }
+/*  ssize_t s =  dict.size();
+  if (!ok) s = -s;
+  v8::Local<v8::Array> result = Nan::New<v8::Array>(2);
+  result->Set(Nan::New<v8::Integer>(0), returnArray);
+  // when ok === false all data has been read, so it's then finished
+  result->Set(Nan::New<v8::Integer>(1), Nan::New<v8::Integer>(static_cast<int>(s)));*/
 
   info.GetReturnValue().Set(returnArray);
 }
@@ -396,9 +409,16 @@ NAN_METHOD(Iterator::Next) {
 
 NAN_METHOD(Iterator::EndSync) {
   Iterator* iterator = Nan::ObjectWrap::Unwrap<Iterator>(info.This());
-  //leveldb::Iterator* dbIterator = iterator->dbIterator;
-  iterator->IteratorEnd();
-  iterator->Release()
+  if (iterator->nexting) {
+    info.GetReturnValue().Set(Nan::New(false));
+  }
+  if (!iterator->ended) {
+    iterator->ended = true;
+    iterator->IteratorEnd();
+    //iterator->Release();
+    info.GetReturnValue().Set(Nan::New(false));
+  }
+  info.GetReturnValue().SetUndefined();
 }
 
 NAN_METHOD(Iterator::End) {

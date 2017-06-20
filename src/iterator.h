@@ -91,7 +91,9 @@ private:
   static NAN_METHOD(New);
   static NAN_METHOD(Seek);
   static NAN_METHOD(Next);
+  static NAN_METHOD(NextSync);
   static NAN_METHOD(End);
+  static NAN_METHOD(EndSync);
 };
 
 } // namespace leveldown
