@@ -38,7 +38,7 @@ LevelDOWN.prototype._put = function (key, value, options, callback) {
   this.binding.put(key, value, options, callback)
 }
 LevelDOWN.prototype.putSync = function (key, value, options) {
-    return this.binding.putSync(key, value, options)
+  return this.binding.putSync(key, value, options)
 }
 
 
@@ -90,7 +90,7 @@ LevelDOWN.prototype.getProperty = function (property) {
 }
 
 
-LevelDOWN.prototype._iterator = function (options) {
+LevelDOWN.prototype.iterator = LevelDOWN.prototype._iterator = function (options) {
   return new Iterator(this, options)
 }
 

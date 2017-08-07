@@ -401,7 +401,7 @@ NAN_METHOD(Database::Put) {
 }
 
 
-//getSync(aKey, fillCache=true)
+//getSync(aKey, options)
 NAN_METHOD(Database::GetSync) {
     
   leveldown::Database* database = Nan::ObjectWrap::Unwrap<leveldown::Database>(info.This());
@@ -412,6 +412,14 @@ NAN_METHOD(Database::GetSync) {
   
   v8::Local<v8::Object> keyHandle = info[0].As<v8::Object>();
   LD_STRING_OR_BUFFER_TO_SLICE(key, keyHandle, key);
+
+  v8::Local<v8::Object> optionsObj;
+  if (info[1]->IsObject()) {
+    optionsObj = info[1].As<v8::Object>();
+  }
+  bool asBuffer = BooleanOptionValue(optionsObj, "asBuffer", true);
+  bool fillCache = BooleanOptionValue(optionsObj, "fillCache", true);
+
   std::string value;
   bool fillCache = true;
   if (info.Length() > 1 && info[1]->IsBoolean()) fillCache = info[1]->BooleanValue();
@@ -426,9 +434,13 @@ NAN_METHOD(Database::GetSync) {
     Nan::ThrowError(status.ToString().c_str());
     info.GetReturnValue().SetUndefined();
   }
-  
-  v8::Local<v8::Value> returnValue = Nan::New<v8::String>((char*)value.data(), value.size()).ToLocalChecked();
-  //printf("\ndb.get(%s)=%s\n", *key, *NanUtf8String(returnValue));
+
+  v8::Local<v8::Value> returnValue;
+  if (asBuffer) {
+    returnValue = Nan::CopyBuffer((char*)value.data(), value.size()).ToLocalChecked();
+  } else {
+    returnValue = Nan::New<v8::String>((char*)value.data(), value.size()).ToLocalChecked();
+  }
   info.GetReturnValue().Set(returnValue);
 }
     

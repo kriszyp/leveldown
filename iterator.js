@@ -59,6 +59,23 @@ Iterator.prototype._next = function (callback) {
 
   return this
 }
+/*
+Iterator.prototype.next = function (callback) {
+  var that = this
+    , key
+    , value
+
+  this.binding.next(function (err, array, finished) {
+    if (err) return callback(err)
+
+    that.cache    = array
+    that.finished = finished
+    that._next(callback)
+  })
+  return this
+}
+*/
+
 Iterator.prototype.nextSync = function () {
   return this.binding.nextSync()
 }
