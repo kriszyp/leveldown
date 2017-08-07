@@ -421,8 +421,6 @@ NAN_METHOD(Database::GetSync) {
   bool fillCache = BooleanOptionValue(optionsObj, "fillCache", true);
 
   std::string value;
-  bool fillCache = true;
-  if (info.Length() > 1 && info[1]->IsBoolean()) fillCache = info[1]->BooleanValue();
   
   leveldb::ReadOptions options = leveldb::ReadOptions();
   options.fill_cache = fillCache;

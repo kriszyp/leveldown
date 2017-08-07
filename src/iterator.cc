@@ -373,12 +373,13 @@ NAN_METHOD(Iterator::NextSync) {
   result->Set(Nan::New<v8::Integer>(0), returnArray);
   // when ok === false all data has been read, so it's then finished
   result->Set(Nan::New<v8::Integer>(1), Nan::New<v8::Integer>(static_cast<int>(s)));*/
-  v8::Local<v8::Value> returnData[] = {
+  returnArray->Set(Nan::New("finished").ToLocalChecked(), Nan::New<v8::Boolean>(!ok))
+  /*v8::Local<v8::Value> returnData[] = {
     returnArray
     // when ok === false all data has been read, so it's then finished
-    , Nan::New<v8::Boolean>(!ok)
-  };
-  info.GetReturnValue().Set(returnData);
+    , 
+  };*/
+  info.GetReturnValue().Set(returnArray);
 }
 
 NAN_METHOD(Iterator::Next) {
