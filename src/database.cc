@@ -429,8 +429,11 @@ NAN_METHOD(Database::GetSync) {
   
   if (!status.ok()) {
     leveldb::Status* st = reinterpret_cast<leveldb::Status*>(&status);
-    Nan::ThrowError(status.ToString().c_str());
-    info.GetReturnValue().SetUndefined();
+    if (st->IsNotFound()) {
+      return info.GetReturnValue().SetUndefined();
+    } else {
+      return Nan::ThrowError(status.ToString().c_str());
+    }
   }
 
   v8::Local<v8::Value> returnValue;
