@@ -12,6 +12,7 @@ leakydb
 *.obj
 *.1sdk.pdb
 *.lastbuildstate
+*.bat
 npm-debug.log
 prebuilds/
 yarn.lock
